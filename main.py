@@ -17,6 +17,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
    
 
     network = Classifier(args.training) 
+    network.cost_function()
+    # NETWORK.COSTFUNCT() # TO TEST
+    # NETWORK.TRAIN()
+    # NETWORK.PREDICT()
+
     return 0
     
 
