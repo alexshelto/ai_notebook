@@ -59,12 +59,18 @@ class Classifier:
         # 0's else, 1 on the correct index corresponding to the label. ie: for letter a: put a 1 on the 0th index, if letter is z: 25th index
         y_k = np.zeros((self.m, self.num_labels))
         for i in range(0, len(self.y)):
-            label_index = y[i]
+            label_index = int(self.y[i])
             y_k[i, label_index] = 1
         
+        # Fix these var names
         inner_term0 = (-y_k * np.log(a3))
-        inner_term1 = (1 - yk) * np.log(1-a3)
+        inner_term1 = (1 - y_k) * np.log(1-a3)
         left_side = np.sum(inner_term0 + inner_term1) / self.m
+        right_side = np.sum(self.theta1[:, 1:] ** 2) + np.sum(self.theta2[:,1:] ** 2) # sum of all theta vals squred excluding theta index0 
+        right_side = (self.lam / 2 / self.m) * right_side
+        cost = left_side + right_side
+        
+        print(f'cost: {cost}')
 
 
         #back propogate
