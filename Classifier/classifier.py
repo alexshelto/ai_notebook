@@ -8,21 +8,23 @@ import matplotlib.pyplot as plt
 
 # input layer size, num layers
 class Classifier:
-    def __init__(self, dataset, hidden_layer_size=25, epsilon=1.7):
+    def __init__(self, dataset, hidden_layer_size=25, epsilon=0.13):
         print('Loading data set')
         self.dataset = np.genfromtxt(dataset, delimiter=',')
         self.y = self.dataset[:, 0].reshape(-1,1)  # labels 
         self.X = self.dataset[:, 1:] # Input data
         self.m =  len(self.y)     # number of training examples 
         self.lam = 0 # lambda
+        self.epsilon = epsilon
         self.input_layer_size = len(self.X[0])
         self.hidden_layer_size = 25
         self.num_labels = 26
         print('complete')
 
         # creating theta params. the (+1) in the thetas is to account for fitting the bias
-        self.theta1 = np.random.rand(self.hidden_layer_size, self.input_layer_size + 1) # theta for calculating L=2. default 25 units in layer 2
-        self.theta2 = np.random.rand(self.hidden_layer_size + 1, self.num_labels)         # theta for output layer. default 25 + 1 units, 26 total classes a-z
+        self.theta1 = np.random.rand(self.hidden_layer_size, self.input_layer_size + 1) * 2 * self.epsilon - self.epsilon # theta for calculating L=2. default 25 units in layer 2
+        self.theta2 = np.random.rand(self.hidden_layer_size + 1, self.num_labels) * 2 * self.epsilon - self.epsilon# theta for output layer. default 25 + 1 units, 26 total classes a-z
+    
         # creating a flattened array of theta values for the optimization function
         self.params = np.r_[self.theta1.T.flatten(), self.theta2.T.flatten()]
 
@@ -31,6 +33,10 @@ class Classifier:
 
     def sigmoid(self, z):
         return ( (1 / (1 + np.exp(-z))) )
+    
+    def sigmoid_gradient(self, z):
+        sig = self.sigmoid(z)
+        return (sig * (1 - sig))
 
     def feed_forward(self):
         '''propogate forward calculating a2, z2, a3, z3'''
@@ -53,8 +59,8 @@ class Classifier:
     def cost_function(self):
         # FWD Propogate
         a1, a2, a3, z2, z3 = self.feed_forward()
+
         # Compute Cost, note: a3 = h_theta(x)
-        
         # create a matrix, (num of training ex, num of labels)
         # 0's else, 1 on the correct index corresponding to the label. ie: for letter a: put a 1 on the 0th index, if letter is z: 25th index
         y_k = np.zeros((self.m, self.num_labels))
@@ -69,12 +75,9 @@ class Classifier:
         right_side = np.sum(self.theta1[:, 1:] ** 2) + np.sum(self.theta2[:,1:] ** 2) # sum of all theta vals squred excluding theta index0 
         right_side = (self.lam / 2 / self.m) * right_side
         cost = left_side + right_side
-        
         print(f'cost: {cost}')
-
-
+        
         #back propogate
-
-
-
-
+        delta_3 = a3 - y_k
+        delta_2 = (self.theta2.T.dot(delta_3)) * a2 * (1 - a2)
+        
